@@ -1,0 +1,48 @@
+[package]
+name = "windui-web"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "winduiweb: the Windrecorder window drawn in HTML — a Tauri shell over windui's shared query, settings and recording layer"
+
+[[bin]]
+name = "winduiweb"
+path = "src/main.rs"
+
+[features]
+# Tauri decides "development shell" versus "shipped app" from this feature, *not* from the cargo
+# profile. Without it `tauri`'s build script writes `cargo:dev=true`, `tauri-build` sets `cfg(dev)`,
+# `generate_context!` embeds no assets at all, and the window opens `build.devUrl` — which renders a
+# WebView2 "cannot reach localhost" error page unless somebody happens to have `pnpm dev` running.
+# Measured, not theorised: a plain `cargo build --release` produced an 11.7 MB binary containing zero
+# bytes of the 340 KB bundle. The Tauri CLI passes this flag on your behalf; `build.ps1` invokes cargo
+# directly, so the flag has to live here where it cannot be forgotten.
+custom-protocol = ["tauri/custom-protocol"]
+
+[dependencies]
+# The whole reason `windui`'s data half became a library target: this window and the egui window read
+# one query layer, one settings validator and one recording-options reader. A second implementation of
+# `run_search` here would disagree with the first about pagination or the product-day boundary, and the
+# disagreement would show up as the two windows answering different questions about the same afternoon.
+# The dependency key is the package name (`windui`); the crate is imported as `wind_ui`, which is the
+# library target's name.
+windui = { path = "../../windui" }
+wind-base = { path = "../../base" }
+# The two artefact families the AI page and the new summary screens read: what each recorded stretch
+# was about, and what each product day was about. Read-only from here — this crate never writes a
+# summary, and `wind-summary` is the side that decides whether a day is *done*, so a second
+# implementation of that rule in this file would be the third window disagreeing with the first two.
+wind-summary = { path = "../../summary" }
+# `Env`, `SearchParams` and the day/month outcomes are constructed here and handed to `wind-store`, so
+# the config overlay type is named in signatures. All three are already in the workspace lock.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+
+[build-dependencies]
+# `tauri-build` generates and links the Windows resource itself (via `tauri-winres`): the window icon
+# and the right-click → Properties version block, taken from `[package] version` and `productName` in
+# this file and `tauri.conf.json`. No `embed-resource` here, unlike the other nine binaries, because
+# two build scripts writing one .exe resource section is a link error waiting to happen — and the
+# version number this one reports is the same workspace version the shared fragment would have used.
+tauri-build = { version = "2", features = [] }

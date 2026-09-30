@@ -1,0 +1,20 @@
+[package]
+name = "wind-summary"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "The single owner of AI-written summaries: segment keys, one JSON file per product day, the coverage gate, and the two fingerprints the internal generator and the external bridge both read"
+
+[dependencies]
+wind-base = { path = "../base" }
+wind-store = { path = "../store" }
+# Both already in the workspace lock and already cached (`wind-base` parses config with serde_json and
+# sends `LocalParts` to the Tauri front end through serde derive), so this adds no download and
+# `cargo build --offline` stays the gate it is upstream.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Notably absent is rusqlite, for the same reason the bridge leaves it out: this crate speaks to the
+# index only through `wind-store`'s API, so it cannot contain a SQL statement even by accident — and
+# it never holds a write handle to a month file. The summaries it owns live in `userdata/result_*`.
+
+[dev-dependencies]

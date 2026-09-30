@@ -1,0 +1,15 @@
+[package]
+name = "windcap-core"
+version.workspace = true
+edition = "2021"
+license.workspace = true
+description = "Windrecorder native capture core: session-state gating, GDI grab, change detection"
+
+[lib]
+name = "windcap"
+path = "src/lib.rs"
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+# 零第三方依赖：全部走 raw extern "system" 直调 Win32，
+# 避免在无法保证网络可用的机器上引入 crates.io 传递树。

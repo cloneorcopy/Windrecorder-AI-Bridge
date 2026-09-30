@@ -1,0 +1,12 @@
+[package]
+name = "wind-store"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "The monthly SQLite index as a contract: schema-compatible writer, read-only reader, the search the product is named after, and the maintenance statements"
+
+[dependencies]
+wind-base = { path = "../base" }
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+[dev-dependencies]

@@ -1,0 +1,40 @@
+[package]
+name = "wind-maint"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Idle maintenance: turn screenshot slices into video, refresh index existence, expire and compress, back up the index"
+
+[[bin]]
+name = "windmaint"
+path = "src/main.rs"
+
+[dependencies]
+wind-base = { path = "../base" }
+wind-store = { path = "../store" }
+# The AI summary caches, so the erase and retention passes can remove the paragraphs that
+# were written from the text they are erasing. `forget` that leaves a derived summary behind
+# has not erased anything — it has renamed it.
+wind-summary = { path = "../summary" }
+# The census asks how many stretches have no summary the index still agrees with, and the answer is a
+# function of the prompt digests — which are computed in `wind-ai`, the crate that sends them. Counting
+# the queue here rather than shelling out to `windai` keeps one implementation of "what is missing".
+wind-ai = { path = "../ai" }
+# Both already in the workspace lock (wind-base parses config, wind-store embeds SQLite);
+# adding them here fetches nothing and keeps `cargo build --offline` the gate it is upstream.
+serde_json = "1"
+# The maintenance pass needs a read-only handle on a *live* month file, which wind-store does not
+# expose: its reader works through the `_TEMP_READ.db` copy, and copying is a write.
+rusqlite = { version = "0.32", features = ["bundled"] }
+# A preview is drawn from a JPEG that is already on disk, so the pass needs a decoder. `image` with the
+# JPEG feature only is what `windui` and `wind-reindex` already decode with — the same offline cargo
+# cache entry, so `cargo build --offline` stays the gate it is upstream and nothing is fetched.
+image = { version = "0.25", default-features = false, features = ["jpeg"] }
+# The stored form of a preview is base64 JPEG in `video_text.thumbnail`, which is read and written here.
+base64 = "0.22" 
+
+[build-dependencies]
+# Build-time only, so it never enters the shipped .exe: it compiles the generated version resource
+# and hands rustc a link arg for the binary. All ten binaries include the one shared fragment at
+# base/version_resource.rs, which is where the field list and the FileDescription wording live.
+embed-resource = "2.5.2"

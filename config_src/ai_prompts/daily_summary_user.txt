@@ -1,0 +1,4 @@
+Product day {date}: {day_begin} to {day_end} ({day_rule}).
+Recorded segments: {segments_total}. Summarised: {segments_summarised}.
+
+{period_summaries}

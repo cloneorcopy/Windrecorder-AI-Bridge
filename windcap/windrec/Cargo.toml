@@ -1,0 +1,27 @@
+[package]
+name = "windrec"
+version.workspace = true
+edition = "2021"
+license.workspace = true
+description = "Windrecorder native recorder: captures the screen, gates on real change, OCRs, and writes the monthly SQLite index itself"
+
+[[bin]]
+name = "windrec"
+path = "src/main.rs"
+
+[dependencies]
+windcap-core = { path = "../core" }
+wind-base = { path = "../base" }
+# bundled: compiles SQLite from source into the binary, so the shipped .exe has no sqlite3.dll
+wind-store = { path = "../store" }
+# `windrec doctor` asks `windsetup`'s engine prober whether the OCR binary is present *and* runnable
+# rather than growing a second prober here. The prober already invokes the engine's own `-s` language
+# list, which is the only check that distinguishes a file on disk from an engine that works; two
+# implementations of that question are how a doctor report starts lying.
+wind-setup = { path = "../setup" }
+
+[build-dependencies]
+# Build-time only, so it never enters the shipped .exe: it compiles the generated version resource
+# and hands rustc a link arg for the binary. All ten binaries include the one shared fragment at
+# base/version_resource.rs, which is where the field list and the FileDescription wording live.
+embed-resource = "2.5.2"

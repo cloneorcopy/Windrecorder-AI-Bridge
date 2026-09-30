@@ -1,0 +1,32 @@
+[package]
+name = "wind-mcp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "windmcp: the streamable-HTTP MCP bridge that hands the recorded screen history to an AI assistant, read-only and behind a bearer token"
+
+[[bin]]
+name = "windmcp"
+path = "src/main.rs"
+
+[dependencies]
+wind-base = { path = "../base" }
+wind-store = { path = "../store" }
+# Both already in the workspace lock: wind-base parses config with serde_json and encodes the
+# stored thumbnail with base64. Neither is fetched here, so `cargo build --offline` stays the gate
+# it is upstream. Notably absent is rusqlite: the bridge speaks only to wind-store's API, so it
+# cannot contain a SQL statement even by accident, and rusqlite's presence in a manifest would
+# invite exactly that.
+serde_json = "1"
+base64 = "0.22"
+# The summary layer this bridge exposes is a crate of its own, not a module of here, because the same
+# rules answer `windai summarize` too. Still no rusqlite anywhere below it: the summaries are read out of
+# `userdata/result_ai_*` JSON and the index is read through `wind-store`, so a tool call cannot write a
+# row and the one place that can produce SQL is not in this dependency tree.
+wind-summary = { path = "../summary" }
+
+[build-dependencies]
+# Build-time only, so it never enters the shipped .exe: it compiles the generated version resource
+# and hands rustc a link arg for the binary. All ten binaries include the one shared fragment at
+# base/version_resource.rs, which is where the field list and the FileDescription wording live.
+embed-resource = "2.5.2"

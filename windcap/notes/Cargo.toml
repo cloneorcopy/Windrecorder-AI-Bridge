@@ -1,0 +1,32 @@
+[package]
+name = "wind-notes"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "The user's flag/note subsystem: the bookmark table in userdata/flag_mark_note.csv, the timeline marker geometry the day view draws, capture-on-flag, and the windnotes CLI"
+
+[[bin]]
+name = "windnotes"
+path = "src/main.rs"
+
+[dependencies]
+wind-base = { path = "../base" }
+wind-store = { path = "../store" }
+# The grab and the 70 px thumbnail already live here and in wind-base; re-implementing either would
+# mean a second GDI path and a second JPEG encoder in the tree.
+windcap-core = { path = "../core" }
+# Both already in the workspace lock (wind-base encodes thumbnails with base64 and parses config with
+# serde_json), so neither fetches anything and `cargo build --offline` stays the gate it is upstream.
+# base64 is here for one job: reading a stored thumbnail's JPEG header back to prove it is a 70 px
+# JPEG, which a terminal check cannot do any other way.
+base64 = "0.22"
+
+[dev-dependencies]
+# `Config::set` speaks serde_json, and the display-strategy branch is only testable by setting it.
+serde_json = "1"
+
+[build-dependencies]
+# Build-time only, so it never enters the shipped .exe: it compiles the generated version resource
+# and hands rustc a link arg for the binary. All ten binaries include the one shared fragment at
+# base/version_resource.rs, which is where the field list and the FileDescription wording live.
+embed-resource = "2.5.2"

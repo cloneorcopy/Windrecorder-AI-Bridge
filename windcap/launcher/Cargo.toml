@@ -1,0 +1,23 @@
+[package]
+name = "wind-launcher"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Windrecorder.exe: the one file in the payload named after the product, and the one to double-click. It finds bin\\windsvc.exe and starts it, with argv handed over unchanged; it takes no lock, draws no menu, and resolves no layout."
+
+[[bin]]
+name = "Windrecorder"
+path = "src/main.rs"
+
+[dependencies]
+# Two things are taken from it and nothing more: `install::resolve_root_from_exe`, so this file finds
+# the install by the same walk-up every other binary uses, and `version::line`, so `--version` here is
+# the same string as `--version` there. Both are already linked by the tray.
+wind-base = { path = "../base" }
+
+[build-dependencies]
+# Build-time only, so it never enters the shipped .exe: it compiles the generated version resource and
+# hands rustc a link arg for the binary. See base/version_resource.rs for why one fragment is included
+# by every binary rather than ten .rc files existing, and for the offline-resolution check that let
+# `embed-resource` be used at all.
+embed-resource = "2.5.2"
