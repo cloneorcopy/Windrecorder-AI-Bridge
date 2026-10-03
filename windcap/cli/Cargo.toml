@@ -1,0 +1,25 @@
+[package]
+name = "windcap-cli"
+version.workspace = true
+edition = "2021"
+license.workspace = true
+description = "windcapctl: search, inspect and benchmark the recorded history from a terminal, with the timings printed"
+
+[[bin]]
+name = "windcapctl"
+path = "src/main.rs"
+
+[dependencies]
+windcap-core = { path = "../core" }
+wind-store = { path = "../store" }
+wind-base = { path = "../base" }
+# rusqlite 0.32 is already in the workspace lock via wind-store; naming `Connection` in a signature
+# is cheaper than the alternative, which is re-implementing `index`'s before/after measurement
+# without access to SQLite. bundled feature matches wind-store so the same vendored SQLite links.
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+[build-dependencies]
+# Build-time only, so it never enters the shipped .exe: it compiles the generated version resource
+# and hands rustc a link arg for the binary. All ten binaries include the one shared fragment at
+# base/version_resource.rs, which is where the field list and the FileDescription wording live.
+embed-resource = "2.5.2"

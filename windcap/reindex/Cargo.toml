@@ -1,0 +1,35 @@
+[package]
+name = "wind-reindex"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Index already-recorded video: pull a segment's key frames, OCR them, deduplicate on upstream's metric, and write the rows — the path that makes an existing library searchable after the move to native"
+
+[lib]
+name = "wind_reindex"
+path = "src/lib.rs"
+
+[[bin]]
+name = "wind-reindex"
+path = "src/bin/wind_reindex.rs"
+
+[dependencies]
+wind-base = { path = "../base" }
+wind-store = { path = "../store" }
+# The monitor list is what `display_count` and the per-panel crop geometry are measured against,
+# and windcap-core already enumerates it in mss's own order. Depending on it is cheaper than a
+# second, subtly-different EnumDisplayMonitors binding that could disagree with the recorder.
+windcap-core = { path = "../core" }
+# The rollback deletes the rows a crashed run left behind. wind-store exposes the connection but not
+# a delete-by-name, and its `delete_rows` wants a `Transaction`, so the type has to be named here.
+# Same version and features as wind-store so the one vendored SQLite links.
+rusqlite = { version = "0.32", features = ["bundled"] }
+# jpeg only: the extracted i-frames are jpeg and nothing else in this pipeline is a different codec.
+# Already vendored (windui uses the identical feature set), so `--offline` keeps working.
+image = { version = "0.25", default-features = false, features = ["jpeg"] }
+
+[build-dependencies]
+# Build-time only, so it never enters the shipped .exe: it compiles the generated version resource
+# and hands rustc a link arg for the binary. All ten binaries include the one shared fragment at
+# base/version_resource.rs, which is where the field list and the FileDescription wording live.
+embed-resource = "2.5.2"

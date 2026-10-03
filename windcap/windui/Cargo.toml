@@ -1,0 +1,78 @@
+[package]
+name = "windui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Native egui front end for the Windrecorder index: Search, OneDay and the settings those two screens read"
+
+[[bin]]
+name = "windui"
+path = "src/main.rs"
+
+# The query/day/settings/flag half of this window, as a library, so the Tauri front end in
+# `winduiweb` reads through the same code instead of writing a second one. See src/lib.rs.
+[lib]
+name = "wind_ui"
+path = "src/lib.rs"
+
+[dependencies]
+eframe = { version = "0.29", features = ["wgpu"] }
+egui = "0.29"
+# The UI never talks to SQLite: wind-store owns the schema contract, the read-only temp-copy
+# strategy and the search semantics, and a UI that bypasses it is how a recorder's database ends
+# up locked mid-segment.
+wind-base = { path = "../base" }
+wind-store = { path = "../store" }
+# The summary queue, so "try these words" asks about a real stretch rather than about a
+# made-up one. Same crate the bridge and `windai` read, so the sample the button shows is the
+# sample the idle pass would have summarised.
+wind-summary = { path = "../summary" }
+# The AI page's whole design constraint is that the UI and the CLI must never disagree about what a
+# valid configuration is, and the only way to guarantee that is for one of them to own the answer.
+# `wind-ai` does — `settings::Settings::read` holds the key names and defaults, `require_usable` holds
+# the "which key needs editing" diagnostics, `client::Client` is the request path a real test of the
+# connection has to be, and `error::redact` is the bearer-token scrub that fixed bug is built on. A
+# second validator written here would drift the first time a key was renamed, and the drift would show
+# up as a configured feature silently reading its default — not as a build error. Cost: no new
+# third-party crate (`wind-ai` needs only `wind-base`, `wind-store` and `serde_json`, all three
+# already here), and its transport is the `winhttp`/`schannel` system libraries eframe already links.
+wind-ai = { path = "../ai" }
+# The flag/note table is `wind-notes`' data, not this crate's, and the editor's read + append + edit +
+# delete all go through it so the CSV has exactly one writer. `windui` writing its own row-rewrite for
+# delete would be a second one — two writers of `flag_mark_note.csv` is precisely how a flag the tray
+# appended while a window was open gets dropped. Cost check: `wind-notes` pulls `wind-base`,
+# `wind-store` and `windcap-core`, all three already here, and no new third-party crate.
+wind-notes = { path = "../notes" }
+# The MCP bridge's five keys live on this page, and the page must not be the one that decides whether
+# the service will start: `wind_mcp::auth::startup_guard` owns that, and `Runtime::client_url_for` /
+# `listening` own what the address means. Writing a second rule here is how the window ends up
+# accepting a configuration whose bridge never comes up — the exact silence this page was added to
+# remove. Cost check: `wind-mcp` needs only `wind-base`, `wind-store`, `serde_json` and `base64`, all
+# four already in this manifest, and it pulls no HTTP framework of its own.
+wind-mcp = { path = "../mcp" }
+# Deliberate, and the trade was considered: windui is the fourth consumer of the monitor list
+# (`windrec` grabs by it, `windmaint` sizes its encode against it, the Python UI showed it), and the
+# one thing a "record which panel" picker cannot delegate is the truth about what is plugged in. The
+# alternative was a second `EnumDisplayMonitors` block here, which would have had to reproduce the
+# 1-based `mss` numbering that `record_single_display_index` is defined against and the
+# per-monitor-DPI-aware call that makes the reported pixels real. Cost check: `windcap-core` pulls no
+# third-party crate at all — it is raw `extern "system"` against user32, which eframe already links —
+# so this is a few dozen kilobytes against a 12.7 MB binary, not a dependency tree.
+windcap-core = { path = "../core" }
+# Thumbnails are stored as base64 JPEG in video_text.thumbnail; jpeg is the only codec needed and
+# the only one verified present in this workspace's offline cargo cache.
+image = { version = "0.25", default-features = false, features = ["jpeg"] }
+base64 = "0.22"
+# Config::set takes a serde_json::Value, so writing a setting needs the type, not a re-encoder.
+serde_json = "1"
+# The library target's output types carry `Serialize` (and `SearchParams` also `Deserialize`) because
+# that is how the Tauri front end consumes them: the JSON contract *is* the struct, so a renamed field
+# cannot survive as a silent mismatch between the two windows' idea of a row. Already in the workspace
+# lock; nothing new is fetched.
+serde = { version = "1", features = ["derive"] }
+
+[build-dependencies]
+# Build-time only, so it never enters the shipped .exe: it compiles the generated version resource
+# and hands rustc a link arg for the binary. All ten binaries include the one shared fragment at
+# base/version_resource.rs, which is where the field list and the FileDescription wording live.
+embed-resource = "2.5.2"

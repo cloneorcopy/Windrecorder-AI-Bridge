@@ -1,0 +1,17 @@
+[package]
+name = "wind-base"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Platform and application plumbing shared by the native recorder, indexer, maintenance pass and UI: wall clock in the app's own epoch, config, on-disk naming, lock files, CSV side-channels, JPEG encode"
+
+[dependencies]
+serde_json = "1"
+# `LocalParts` carries `Serialize`/`Deserialize` because the Tauri front end sends and receives the
+# query's date range as that type: `SearchParams::from`/`to` are `LocalParts`, and the range is exactly
+# the value `wind-store` is asked for. Serialising the type instead of a stringly-typed copy of it
+# keeps one definition of "which day did the user ask for" on both sides of the boundary. Already in
+# the workspace lock.
+serde = { version = "1", features = ["derive"] }
+base64 = "0.22"
+jpeg-encoder = "0.6"

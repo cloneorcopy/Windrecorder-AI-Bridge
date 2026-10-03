@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- The base colour is set here as well as in CSS because the webview paints this page before
+         React mounts: without it a Tauri window flashes white for a frame on every start, which is
+         the first thing a person sees of the redesigned product. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Windrecorder</title>
+    <style>
+      html,
+      body {
+        background-color: #07090e;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

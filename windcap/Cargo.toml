@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+members = ["core", "base", "store", "cli", "windrec", "windui", "winduiweb/src-tauri", "maint", "reindex", "supervisor", "ai", "setup", "mcp", "notes", "summary", "launcher"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "GPL-2.0"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+# 不要在此加回 panic = "abort"：本 crate 以 cdylib 形式被 Python 进程装载，
+# 需要保持默认的 unwind 策略，让 ffi_c 能在 ABI 边界把 panic 变成失败值而不是杀死宿主。

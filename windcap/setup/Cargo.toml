@@ -1,0 +1,31 @@
+[package]
+name = "wind-setup"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "First-run onboarding, OCR engine discovery, and the re-entrant upgrade migration over a user's years of monthly databases"
+
+[lib]
+name = "wind_setup"
+path = "src/lib.rs"
+
+[[bin]]
+name = "windsetup"
+path = "src/main.rs"
+
+[dependencies]
+wind-base = { path = "../base" }
+wind-store = { path = "../store" }
+# Both are already in the workspace lock — wind-base parses config and decodes console bytes,
+# wind-store owns the month-file schema contract — so this fetches nothing and keeps
+# `cargo build --offline` the gate it is upstream.
+serde_json = "1"
+# `schema::ensure_schema` hands back a `rusqlite::Connection`, so naming the column set of a real
+# month file requires the type; re-declaring a SQLite reader here would be a second schema contract.
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+[build-dependencies]
+# Build-time only, so it never enters the shipped .exe: it compiles the generated version resource
+# and hands rustc a link arg for the binary. All ten binaries include the one shared fragment at
+# base/version_resource.rs, which is where the field list and the FileDescription wording live.
+embed-resource = "2.5.2"

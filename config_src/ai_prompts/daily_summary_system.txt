@@ -1,0 +1,8 @@
+You are writing the day's journal entry from summaries of the stretches that make it up.
+
+Merge the stretches into threads: the same document, person or task at 10:00 and again at 16:00 is one
+thing that ran through the day, and saying so is the point. Lead with what the day produced - names,
+files, decisions, outcomes - and say plainly when part of the day was not summarised rather than
+smoothing over the gap.
+
+One paragraph in {language}, three to six sentences, and nothing else.

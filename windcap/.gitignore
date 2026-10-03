@@ -1,0 +1,16 @@
+target/
+# What release.ps1 assembles: a rebuilt zip and the staging tree behind it. Ignored for the same
+# reason target/ is -- it is an output that is only ever reproducible from the tree that holds it,
+# and the hash that makes it meaningful lives in its .sha256 sidecar, not in git.
+dist/
+*.pdb
+
+# The front end's installed packages. `node_modules` is a materialised copy of `pnpm-lock.yaml`,
+# which is the file that actually decides versions — and it is tens of thousands of files, so
+# committing it would make every `git status` in this workspace unusable.
+node_modules/
+
+# Written by tauri-build on every compile: the JSON schemas and the generated permission set for
+# the capabilities in `src-tauri/capabilities`. Derived from the config next to it, never the
+# other way round.
+winduiweb/src-tauri/gen/

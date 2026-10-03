@@ -1,0 +1,36 @@
+[package]
+name = "windsvc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "windsvc: the native replacement for main.py — a single-instance system-tray supervisor that starts, stops and reports on windrec, winduiweb and windmaint"
+
+[[bin]]
+name = "windsvc"
+path = "src/main.rs"
+
+[dependencies]
+wind-base = { path = "../base" }
+# The tray's 🚩 files a flag, and a flag now carries the screen that was up when it was taken. That
+# grab is `wind-notes`' [`capture::capture_frame`] — the one JPEG thumbnailer in the tree, shared with
+# the CLI and the day view — so the tray reaches for it rather than growing its own GDI path. This also
+# puts the append behind `wind-notes`' store, so `flag_mark_note.csv` has a single writer across the
+# tray, the editor and the CLI. Cost check: `wind-notes` pulls `wind-base`, `wind-store` and
+# `windcap-core`, all already linked by `windrec`/`windui` in the same shipped zip.
+wind-notes = { path = "../notes" }
+# The tray starts and stops the bridge, so it has to know which of the five settings the service will
+# actually read — otherwise moving a port in the settings window leaves a server answering the old one
+# with nothing on screen to say so. `wind_mcp::runtime::Runtime` is that reader, the same one the
+# service uses at startup, so the tray cannot drift from it. Cost check: `wind-mcp` needs `wind-base`,
+# `wind-store`, `serde_json` and `base64`, all already linked here through `wind-notes`.
+wind-mcp = { path = "../mcp" }
+# Already in the workspace lock (wind-base parses the config with it, maint reads it), so naming it
+# here fetches nothing. languages.json is a nested per-locale object and hand-rolling a parser to
+# avoid this one line would be the only way not to depend on it.
+serde_json = "1"
+
+[build-dependencies]
+# Build-time only, so it never enters the shipped .exe: it compiles the generated version resource
+# and hands rustc a link arg for the binary. See base/version_resource.rs for why one fragment is
+# included by all ten binaries instead of ten .rc files.
+embed-resource = "2.5.2"

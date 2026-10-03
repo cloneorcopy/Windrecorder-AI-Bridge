@@ -1,0 +1,3 @@
+Segment {segment}: {start} to {end} ({duration}), {frames} frames captured off the screen.
+
+{frames_table}

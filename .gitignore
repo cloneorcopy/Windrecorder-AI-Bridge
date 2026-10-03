@@ -1,0 +1,78 @@
+__pycache__
+venv
+.venv
+i_frames
+videos
+db
+db_imgemb
+playground.ipynb
+test
+test.jpg
+test2.jpg
+test3.jpg
+test.py
+.idea
+LOCK_FILE_RECORD.MD
+result_wordcloud
+result_timeline
+result_lightbox
+result_wintitle
+cache
+config/config_user.json
+.vscode/settings.json
+test.png
+env
+random_lexicon
+logs
+userdata
+DEBUGMODE.txt
+DEBUGMODE1.txt
+cache_screenshot
+@AutomationLog.txt
+webui.bat
+test.bat
+wxocr-binary
+hide_CLI_by_python.txt
+
+# Screenshots and captures taken while proving a build on a real machine (windcap/smoke and the
+# manual passes). They are evidence, not product: the payload must never carry them, and `git add -A`
+# must not either.
+__verify__/
+
+# Staged native binaries produced by windcap/build.ps1 -Stage.
+#
+# Anchored at the repo root on purpose. Unanchored, this also matched
+# `windcap/reindex/src/bin/wind_reindex.rs` — a source file, and the only `wind-reindex` entry point —
+# so the crate's Cargo.toml declared a `[[bin]]` path that no checkout contained, and a fresh clone
+# could not build the workspace at all.
+/bin/
+
+# ── How this repository gets built, as opposed to what it ships ─────────────────────────────
+#
+# The skill scaffolding: plans and specs written against a branch, naming the machine and the
+# worktree they were written on. They describe work that has since merged, and a second,
+# contradicting account of it is not something a stranger can use.
+docs/superpowers/
+
+# A merge handoff for a branch that has been merged: it names commits, worktrees, per-crate test
+# counts and what that one tree did not have. The rules it argues for live in `docs/adr/`, in the
+# code and in the tests that hold them; this file is the process, not the result.
+docs/background-minimum-handoff.md
+
+# Task worktrees. This was carried in `.git/info/exclude`, which no clone inherits, so the
+# directory was only invisible on the machine that made it.
+.worktrees/
+
+# The measurement harness compares the Rust engine against the Python application that commit
+# `3f37cbf` deleted: `bench/harness/workers.py` imports `windrecorder.*`, and no such package is in
+# this tree, so nobody but the machine that ran it can execute it. It stays on disk as the source of
+# the numbers quoted in CHANGELOG.md. It is not a deliverable.
+bench/
+
+# Console leftovers from a build, test or doctor run in the repo root. They are output, and a
+# `git add -A` must not turn them into source.
+/*.out
+/*.err
+
+# Streamlit's own credentials file: machine-local by nature, and never something to commit.
+.streamlit/credentials.toml

@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The main Windrecorder window. It is granted the core defaults and nothing else: every read it performs (search, a day, the index, the settings) is a command this crate defines and implements against wind-store, so it needs no filesystem, no shell and no HTTP from the webview. `locate` is the one action that touches the desktop, and it is `backend::locate` on the Rust side — the same reveal-in-Explorer the egui window calls — not an opener permission handed to JavaScript.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}
